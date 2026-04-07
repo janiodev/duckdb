@@ -46,6 +46,29 @@ Not specifying any argument will run all benchmarks.
 
 `build/release/benchmark/benchmark_runner`
 
+#### Compare local baseline vs candidate build on IMDB/JOB
+
+For local optimizer experiments (e.g., ISRO on/off), use the helper script:
+
+```
+benchmark/imdb/compare_local_builds.sh \
+  --baseline /path/to/baseline/benchmark_runner \
+  --candidate /path/to/candidate/benchmark_runner \
+  --output /path/to/imdb_compare.csv
+```
+
+This runs a fixed 20-query JOB track (`01a` to `06c` subset), computes per-query median timings for each binary, and writes a CSV with per-query deltas and summary stats.
+
+You can override the query track if needed:
+
+```
+benchmark/imdb/compare_local_builds.sh \
+  --baseline /path/to/baseline/benchmark_runner \
+  --candidate /path/to/candidate/benchmark_runner \
+  --track "01a,01b,02a,02b" \
+  --output /path/to/imdb_compare_small.csv
+```
+
 #### Other options
 `--info` gives you some other information about the benchmark.
 

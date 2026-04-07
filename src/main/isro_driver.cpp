@@ -157,7 +157,7 @@ unique_ptr<MaterializedQueryResult> ISRODriver::Execute(const string &query) {
 		unordered_map<string, idx_t> new_gamma;
 		profiler.GetRootUnderLock([&](optional_ptr<ProfilingNode> root) {
 			if (root) {
-				ExtractJoinCardinalities(*root, new_gamma);
+				::duckdb::ExtractJoinCardinalities(*root, new_gamma);
 			}
 		});
 
