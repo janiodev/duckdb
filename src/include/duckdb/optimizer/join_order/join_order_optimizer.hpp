@@ -31,6 +31,11 @@ public:
 public:
 	//! Perform join reordering inside a plan
 	unique_ptr<LogicalOperator> Optimize(unique_ptr<LogicalOperator> plan, optional_ptr<RelationStats> stats = nullptr);
+	//! ISRO: inject runtime-measured cardinalities before the next optimization pass.
+	//! Keys are sorted, comma-joined canonical table name strings (e.g., "cast,title").
+	void SetGammaOverrides(const unordered_map<string, idx_t> &overrides) {
+		cardinality_estimator.SetGammaOverrides(overrides);
+	}
 	//! Adds/gets materialized CTE stats
 	void AddMaterializedCTEStats(TableIndex index, RelationStats &&stats);
 	RelationStats GetMaterializedCTEStats(TableIndex index);

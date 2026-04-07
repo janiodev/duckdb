@@ -2,6 +2,7 @@
 #include "duckdb/common/enums/join_type.hpp"
 #include "duckdb/common/limits.hpp"
 #include "duckdb/common/printer.hpp"
+#include "duckdb/common/string_util.hpp"
 #include "duckdb/function/table/table_scan.hpp"
 #include "duckdb/optimizer/join_order/join_node.hpp"
 #include "duckdb/optimizer/join_order/query_graph_manager.hpp"
@@ -9,6 +10,7 @@
 #include "duckdb/planner/operator/logical_comparison_join.hpp"
 #include "duckdb/storage/data_table.hpp"
 
+#include <algorithm>
 #include <math.h>
 
 namespace duckdb {
@@ -409,6 +411,27 @@ DenomInfo CardinalityEstimator::GetDenominator(JoinRelationSet &set) {
 // based on stats (see CalculateUpdatedDenom()).
 template <>
 double CardinalityEstimator::EstimateCardinalityWithSet(JoinRelationSet &new_set) {
+	// ISRO: check runtime-measured cardinality overrides first.
+	if (!gamma_overrides.empty()) {
+		// Build the sorted-table-name key for this relation set.
+		vector<string> names;
+		names.reserve(new_set.count);
+		for (idx_t i = 0; i < new_set.count; i++) {
+			auto it = relation_index_to_name.find(new_set.relations[i].index);
+			if (it != relation_index_to_name.end()) {
+				names.push_back(it->second);
+			}
+		}
+		if (names.size() == new_set.count) {
+			std::sort(names.begin(), names.end());
+			auto gamma_key = StringUtil::Join(names, ",");
+			auto gamma_it = gamma_overrides.find(gamma_key);
+			if (gamma_it != gamma_overrides.end()) {
+				return static_cast<double>(gamma_it->second);
+			}
+		}
+	}
+
 	if (relation_set_2_cardinality.find(new_set.ToString()) != relation_set_2_cardinality.end()) {
 		return relation_set_2_cardinality[new_set.ToString()].cardinality_before_filters;
 	}
@@ -452,6 +475,12 @@ void CardinalityEstimator::InitCardinalityEstimatorProps(optional_ptr<JoinRelati
 	// Get the join relation set
 	D_ASSERT(stats.stats_initialized);
 	auto relation_cardinality = stats.cardinality;
+
+	// ISRO: record index→table name for stable gamma override key construction.
+	D_ASSERT(set->count == 1);
+	if (!stats.table_name.empty()) {
+		relation_index_to_name[set->relations[0].index] = stats.table_name;
+	}
 
 	auto card_helper = CardinalityHelper((double)relation_cardinality);
 	relation_set_2_cardinality[set->ToString()] = card_helper;

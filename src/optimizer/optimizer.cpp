@@ -3,6 +3,7 @@
 #include "duckdb/execution/column_binding_resolver.hpp"
 #include "duckdb/function/function_binder.hpp"
 #include "duckdb/main/client_context.hpp"
+#include "duckdb/main/client_config.hpp"
 #include "duckdb/main/config.hpp"
 #include "duckdb/main/query_profiler.hpp"
 #include "duckdb/optimizer/build_probe_side_optimizer.hpp"
@@ -219,6 +220,11 @@ void Optimizer::RunBuiltInOptimizers() {
 	// this also rewrites cross products + filters into joins and performs filter pushdowns
 	RunOptimizer(OptimizerType::JOIN_ORDER, [&]() {
 		JoinOrderOptimizer optimizer(context);
+		// ISRO: inject runtime-measured cardinalities if available.
+		auto &cfg = ClientConfig::GetConfig(context);
+		if (!cfg.isro_gamma_overrides.empty()) {
+			optimizer.SetGammaOverrides(cfg.isro_gamma_overrides);
+		}
 		plan = optimizer.Optimize(std::move(plan));
 	});
 

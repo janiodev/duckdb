@@ -92,11 +92,24 @@ public:
 	static constexpr double DEFAULT_SEMI_ANTI_SELECTIVITY = 5;
 	explicit CardinalityEstimator() {};
 
+	//! Inject runtime-measured cardinalities that override the static estimates.
+	//! Keys are sorted, comma-joined table names (e.g., "cast,movie_info,title").
+	void SetGammaOverrides(const unordered_map<string, idx_t> &overrides) {
+		gamma_overrides = overrides;
+	}
+
 private:
 	vector<RelationsSetToStats> relation_set_stats;
 	unordered_map<string, CardinalityHelper> relation_set_2_cardinality;
 	JoinRelationSetManager set_manager;
 	vector<RelationStats> relation_stats;
+
+	//! Mapping from internal RelationIndex → table name (built during InitCardinalityEstimatorProps).
+	unordered_map<idx_t, string> relation_index_to_name;
+
+	//! Runtime cardinality overrides injected by ISRODriver.
+	//! Key = sorted, comma-joined canonical table name string (e.g., "cast,title").
+	unordered_map<string, idx_t> gamma_overrides;
 
 public:
 	void RemoveEmptyTotalDomains();

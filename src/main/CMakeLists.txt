@@ -38,6 +38,7 @@ add_library_unity(
   extension_callback_manager.cpp
   extension_install_info.cpp
   extension_manager.cpp
+  isro_driver.cpp
   materialized_query_result.cpp
   pending_query_result.cpp
   prepared_statement.cpp

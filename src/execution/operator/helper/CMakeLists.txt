@@ -20,6 +20,7 @@ add_library_unity(
   physical_reset.cpp
   physical_streaming_limit.cpp
   physical_streaming_sample.cpp
+  physical_isro_sampling.cpp
   physical_transaction.cpp
   physical_update_extensions.cpp
   physical_vacuum.cpp

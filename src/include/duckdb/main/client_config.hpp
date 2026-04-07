@@ -106,6 +106,17 @@ struct ClientConfig {
 	//! If HTTP logging is enabled or not.
 	bool enable_http_logging = true;
 
+	//! ISRO (Iterative Sampling-based Re-optimization) settings
+	//! Whether ISRO-driven query execution is enabled.
+	bool enable_isro = false;
+	//! Sample budget B: maximum rows to pass through each sampling operator before triggering re-optimization.
+	idx_t isro_sample_budget = 10000;
+	//! Maximum number of ISRO re-optimization iterations M.
+	idx_t isro_max_iterations = 5;
+	//! Runtime-measured cardinalities injected by the ISRODriver for the next optimization pass.
+	//! Key: sorted comma-joined table names (e.g., "cast,title"). Cleared after each optimization pass.
+	unordered_map<string, idx_t> isro_gamma_overrides;
+
 	//! **DEPRECATED** The file to save query HTTP logging information to, instead of printing it to the console
 	//! (empty = output to the DuckDB logger)
 	string http_logging_output;

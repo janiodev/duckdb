@@ -125,6 +125,11 @@ enum class PhysicalOperatorType : uint8_t {
 	// Secret
 	// -----------------------------
 	CREATE_SECRET,
+
+	// -----------------------------
+	// ISRO (Iterative Sampling Re-Optimization)
+	// -----------------------------
+	ISRO_SAMPLING,
 };
 
 string PhysicalOperatorToString(PhysicalOperatorType type);
